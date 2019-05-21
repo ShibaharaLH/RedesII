@@ -110,17 +110,16 @@ def codePacket(originalPacket, b, z):
 
                 parityTop = parityTop + parityMatrix[j][n]
 
-OAOA            if parityTop % 2 == 0:
-OAOA                codedPacket[i * ((b*z) + b + z) + b*z + n] = 0
-OAOA
-            else:
-OAOA                codedPacket[i * ((b*z) + b + z) + b*z + n] = 1
+            if parityTop % 2 == 0:
+                codedPacket[i * ((b*z) + b + z) + b*z + n] = 0
 
-OAOA        ##
+            else:
+                codedPacket[i * ((b*z) + b + z) + b*z + n] = 1
+        
+        ##
         # Calculo dos bits de paridade, que sao colocados
         # no pacote codificado: paridade das linhas.
         ##
-OAOA
 
         for m in range(b):
 
@@ -260,6 +259,7 @@ def decodePacket(transmittedPacket, b, z):
 # Comprimento do pacote (em bytes) deve ser
 # especificado.
 ##
+
 def generateRandomPacket(l):
 
     return [random.randint(0,1) for x in range(8 * l)]
