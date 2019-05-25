@@ -12,6 +12,13 @@ def getNoOfParityBits(noOfBits):
 
 	return i
 
+def getNoOfParityBitsInCode(noOfBits):
+	i=0
+	while 2.**i <= noOfBits:
+		i+=1
+
+	return i
+
 def getValueParityBit(pack, initialIndex, increment):
     bitsSum = 0
     indexPack = initialIndex
@@ -43,6 +50,17 @@ def appendParityBit(originalPacket, parityBits):
         i += 1
     return message
 
+def errorDetection(transmittedPacket, noOfParityBitsInCode):
+    indexError = 0
+    noOfParityBits = 0
+    while noOfParityBits < noOfParityBitsInCode:
+        if(getValueParityBit(transmittedPacket, (2 ** noOfParityBits) - 1, 2 ** noOfParityBits) == 1):
+            indexError += (2 ** noOfParityBits)
+        noOfParityBits += 1
+    indexError -= 1
+    return indexError
+
+
 def codePacket(originalPacket):
     noOfParityBitsMessage = getNoOfParityBits(len(originalPacket))
     message = appendParityBit(originalPacket,noOfParityBitsMessage)
@@ -52,5 +70,8 @@ def codePacket(originalPacket):
         noOfParityBits += 1
     return message
 
+def decodePacket(transmittedPacket):
+    noOfParityBitsInCode = getNoOfParityBitsInCode(len(transmittedPacket))
+    return noOfParityBitsInCode
 
-print codePacket([0, 1, 0, 1])
+print errorDetection([1, 0, 0, 1, 1, 0, 1], 3)
