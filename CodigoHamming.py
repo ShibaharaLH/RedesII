@@ -54,11 +54,18 @@ def errorDetection(transmittedPacket, noOfParityBitsInCode):
     indexError = 0
     noOfParityBits = 0
     while noOfParityBits < noOfParityBitsInCode:
-        if(getValueParityBit(transmittedPacket, (2 ** noOfParityBits) - 1, 2 ** noOfParityBits) == 1):
+        if getValueParityBit(transmittedPacket, (2 ** noOfParityBits) - 1, 2 ** noOfParityBits) == 1:
             indexError += (2 ** noOfParityBits)
         noOfParityBits += 1
     indexError -= 1
     return indexError
+
+def errorCorrection(packet, indexOfIncorrectParityBit):
+    if packet[indexOfIncorrectParityBit] == 1:
+        packet[indexOfIncorrectParityBit] = 0
+    else:
+        packet[indexOfIncorrectParityBit] = 1
+    return packet
 
 
 def codePacket(originalPacket):
@@ -72,6 +79,18 @@ def codePacket(originalPacket):
 
 def decodePacket(transmittedPacket):
     noOfParityBitsInCode = getNoOfParityBitsInCode(len(transmittedPacket))
-    return noOfParityBitsInCode
+    verifyError = errorDetection(transmittedPacket, noOfParityBitsInCode)
+    if verifyError != -1:
+        transmittedPacket = errorCorrection(transmittedPacket, verifyError)
+    message = list()
+    i = 0
+    j = 0
+    while i < len(transmittedPacket):
+        if i == (2. ** j) - 1:
+            j += 1
+        else:
+            message.insert(i, transmittedPacket[i])
+        i += 1
+    return message
 
-print errorDetection([1, 0, 0, 1, 1, 0, 1], 3)
+print decodePacket([1, 0, 0, 1, 1, 0, 1])
