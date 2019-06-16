@@ -29,7 +29,8 @@ def getValueParityBit(pack, initialIndex, increment):
                 bitsSum += pack[indexPack]
                 aux += 1
                 indexPack += 1
-            aux = increment
+            else:
+                aux = increment
             indexPack += increment
 
     if bitsSum % 2 == 0:
