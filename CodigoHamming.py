@@ -25,10 +25,12 @@ def getValueParityBit(pack, initialIndex, increment):
     while indexPack <= len(pack) - 1:
         aux = 0
         while aux < increment:
-            bitsSum += pack[indexPack]
-            aux += 1
-            indexPack += 1
-        indexPack += increment
+            if indexPack + aux <= len(pack) - 1:
+                bitsSum += pack[indexPack]
+                aux += 1
+                indexPack += 1
+            aux = increment
+            indexPack += increment
 
     if bitsSum % 2 == 0:
         return 1
@@ -93,4 +95,4 @@ def decodePacket(transmittedPacket):
         i += 1
     return message
 
-print decodePacket([1, 0, 0, 1, 1, 0, 1])
+print codePacket(generateRandomPacket(3))
