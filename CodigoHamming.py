@@ -2,16 +2,15 @@ import random
 import math
 import sys
 
-def generateRandomPacket(l):
-    return [random.randint(0,1) for x in range(8 * l)]
-
+#verifica quantos bits de paridade serao necessarios para a codificacao
 def getNoOfParityBits(noOfBits):
 	i=0
-	while 2.**i <= noOfBits + i : # (power of 2 + parity bits laready  counted) that is for 4 bit of dataword requires 3 bit of parity bits
+	while 2.**i <= noOfBits + i :
 		i+=1
 
 	return i
 
+#verifica quantos bits de paridade estao sendo utilizado no pacote
 def getNoOfParityBitsInCode(noOfBits):
 	i=0
 	while 2.**i <= noOfBits:
@@ -19,11 +18,14 @@ def getNoOfParityBitsInCode(noOfBits):
 
 	return i
 
+#verifica o valor do bit de varidade
 def getValueParityBit(pack, initialIndex, increment):
     bitsSum = 0
     indexPack = initialIndex
+    #usado para percorrer todos os indices do pacote
     while indexPack <= len(pack) - 1:
         aux = 0
+        #usado para somar os valores dos bits da sublista (soma n pula n)
         while aux < increment:
             if indexPack + aux <= len(pack) - 1:
                 bitsSum += pack[indexPack]
@@ -32,37 +34,58 @@ def getValueParityBit(pack, initialIndex, increment):
             else:
                 aux = increment
             indexPack += increment
-
+    # paridade impar
     if bitsSum % 2 == 0:
         return 1
     else:
         return 0
 
+#retorna uma lista com bit de valor 0 nas posicoes de paridade e os bits de mensagem
 def appendParityBit(originalPacket, parityBits):
+    # contador de indice da mensagem a ser transmitida
     i = 0
+    # contador de bits de paridade
     j = 0
+    # contador do indice da mensagem original
     k = 0
     message = list()
     while i < parityBits + len(originalPacket):
+        # insere o bit de valor 0 na posicao de paridade
         if i == (2. ** j) - 1:
             message.insert(i, 0)
             j += 1
+        # insere o bit de valor da mensagem original na mensagem a ser transmitida
         else:
             message.insert(i, originalPacket[k])
             k += 1
         i += 1
     return message
 
+#realiza a deteccao de erro
 def errorDetection(transmittedPacket, noOfParityBitsInCode):
     indexError = 0
     noOfParityBits = 0
+    contError = 0;
+    #usado para verificar todos os bits de paridade
     while noOfParityBits < noOfParityBitsInCode:
+        #como usamos a paridade impar, se a soma dos bits de mensagem e de paridade for 1, ha um erro
         if getValueParityBit(transmittedPacket, (2 ** noOfParityBits) - 1, 2 ** noOfParityBits) == 1:
             indexError += (2 ** noOfParityBits)
+            contError += 1
         noOfParityBits += 1
-    indexError -= 1
-    return indexError
+    if contError > 0:
+        if contError == 1:
+            indexError += contError
+        else:
+            indexError += contError - 1
+        #verifica se houve mais de um erro
+        if indexError >= len(transmittedPacket):
+            return -2
+        return indexError
+    else:
+        return -1
 
+#realiza a correcao do erro. Flopamos o bit
 def errorCorrection(packet, indexOfIncorrectParityBit):
     if packet[indexOfIncorrectParityBit] == 1:
         packet[indexOfIncorrectParityBit] = 0
@@ -72,22 +95,30 @@ def errorCorrection(packet, indexOfIncorrectParityBit):
 
 
 def codePacket(originalPacket):
+    #verifica o numero de bits de paridade que sera necessario
     noOfParityBitsMessage = getNoOfParityBits(len(originalPacket))
+    #insere o bit de valor 0 na posicao de paridade
     message = appendParityBit(originalPacket,noOfParityBitsMessage)
     noOfParityBits = 0
     while noOfParityBits < noOfParityBitsMessage:
+        #insere o devido valor do bit de paridade
         message[(2 ** noOfParityBits) - 1] = getValueParityBit(message, (2 ** noOfParityBits) - 1, 2 ** noOfParityBits)
         noOfParityBits += 1
     return message
 
 def decodePacket(transmittedPacket):
+    #verifica quantos bits de paridade estao sendo utilizados no pacote transmitido
     noOfParityBitsInCode = getNoOfParityBitsInCode(len(transmittedPacket))
+    #verifica se houve um erro
     verifyError = errorDetection(transmittedPacket, noOfParityBitsInCode)
-    if verifyError != -1:
+    if verifyError > -1:
+        #realiza a correcao do erro
         transmittedPacket = errorCorrection(transmittedPacket, verifyError)
+
     message = list()
     i = 0
     j = 0
+    #decodifica o pacote
     while i < len(transmittedPacket):
         if i == (2. ** j) - 1:
             j += 1
@@ -164,10 +195,10 @@ def insertErrors(codedPacket, errorProb):
 # tamanho dos dois pacotes em bytes.
 ##
 def countErrors(originalPacket, decodedPacket):
-
     errors = 0
 
     for i in range(len(originalPacket)):
+
         if originalPacket[i] != decodedPacket[i]:
             errors = errors + 1
 
